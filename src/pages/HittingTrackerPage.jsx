@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/hooks/useAuth'
 import { useHittingSessions } from '../lib/hooks/useHittingSessions'
 import { evaluateQAB, formatQABCriteria } from '../lib/utils/qabEvaluator'
@@ -13,6 +14,7 @@ import { EnhancedAtBatResultSelector } from '../components/Hitting/EnhancedAtBat
 import { GameSummary } from '../components/Hitting/GameSummary'
 
 export function HittingTrackerPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const {
     currentSession,
@@ -127,7 +129,15 @@ export function HittingTrackerPage() {
     return (
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {toast && <Toast message={toast} type="success" />}
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6 sm:mb-8">Hitting Tracker</h1>
+        <div className="flex justify-between items-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Hitting Tracker</h1>
+          <button
+            onClick={() => navigate('/hitting/history')}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+          >
+            History
+          </button>
+        </div>
         <HittingSessionSetup onStartSession={handleSessionSetup} sessionInProgress={false} />
       </div>
     )
@@ -137,6 +147,16 @@ export function HittingTrackerPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {toast && <Toast message={toast} type="success" />}
+
+      {/* Top Navigation */}
+      <div className="flex justify-between items-center mb-6">
+        <button
+          onClick={() => navigate('/hitting/history')}
+          className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+        >
+          ← History
+        </button>
+      </div>
 
       {/* Game Header */}
       <div className="bg-green-50 rounded-lg shadow p-4 sm:p-6 mb-6 border-2 border-green-300">

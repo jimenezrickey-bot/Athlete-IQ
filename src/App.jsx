@@ -3,6 +3,8 @@ import { LoginPage } from './pages/LoginPage'
 import { SignupPage } from './pages/SignupPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { HittingTrackerPage } from './pages/HittingTrackerPage'
+import { HittingHistoryPage } from './pages/HittingHistoryPage'
+import { HittingGameDetailPage } from './pages/HittingGameDetailPage'
 import { ProtectedRoute } from './components/Auth/ProtectedRoute'
 
 function App() {
@@ -24,6 +26,22 @@ function App() {
           element={
             <ProtectedRoute>
               <HittingTrackerPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hitting/history"
+          element={
+            <ProtectedRoute>
+              <HittingHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hitting/history/:sessionId"
+          element={
+            <ProtectedRoute>
+              <HittingGameDetailPage />
             </ProtectedRoute>
           }
         />
