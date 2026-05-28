@@ -44,20 +44,21 @@ export function SignupForm() {
         throw new Error('Failed to create user. Please try again.')
       }
 
-      // Create profile with retry logic
+      // Update profile (profile auto-created by database trigger)
+      // Wait a moment for the trigger to create the profile
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
       let profileError = null
       let retries = 3
 
       while (retries > 0) {
         const { error } = await supabase
           .from('profiles')
-          .insert([
-            {
-              user_id: authData.user.id,
-              name,
-              role,
-            },
-          ])
+          .update({
+            name,
+            role,
+          })
+          .eq('user_id', authData.user.id)
 
         if (!error) {
           // Success
