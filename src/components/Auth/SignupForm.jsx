@@ -17,15 +17,39 @@ export function SignupForm() {
     setIsLoading(true)
 
     try {
+      // Validate inputs
+      if (!email || !password || !name) {
+        throw new Error('Please fill in all fields')
+      }
+
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+
+      // Sign up with Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       })
 
-      if (authError) throw authError
+      if (authError) {
+        // Check if it's an email already registered error
+        if (authError.message.includes('already registered')) {
+          throw new Error('This email is already registered. Please log in instead.')
+        }
+        throw authError
+      }
 
-      if (authData.user) {
-        const { error: profileError } = await supabase
+      if (!authData.user) {
+        throw new Error('Failed to create user. Please try again.')
+      }
+
+      // Create profile with retry logic
+      let profileError = null
+      let retries = 3
+
+      while (retries > 0) {
+        const { error } = await supabase
           .from('profiles')
           .insert([
             {
@@ -35,12 +59,37 @@ export function SignupForm() {
             },
           ])
 
-        if (profileError) throw profileError
+        if (!error) {
+          // Success
+          profileError = null
+          break
+        }
 
-        navigate('/dashboard')
+        profileError = error
+        retries--
+
+        if (retries > 0) {
+          // Wait before retry
+          await new Promise((resolve) => setTimeout(resolve, 500))
+        }
       }
+
+      if (profileError) {
+        throw new Error(
+          `Failed to save profile: ${profileError.message}. Please contact support.`
+        )
+      }
+
+      // Show success message
+      setError(null)
+
+      // Wait a moment for the session to be established
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      navigate('/dashboard')
     } catch (err) {
-      setError(err.message)
+      console.error('Signup error:', err)
+      setError(err.message || 'An error occurred during signup. Please try again.')
     } finally {
       setIsLoading(false)
     }
