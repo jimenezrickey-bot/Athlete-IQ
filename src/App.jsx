@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { HittingTrackerPage } from './pages/HittingTrackerPage'
 import { HittingHistoryPage } from './pages/HittingHistoryPage'
 import { HittingGameDetailPage } from './pages/HittingGameDetailPage'
+import { HittingStatsPage } from './pages/HittingStatsPage'
 import { ProtectedRoute } from './components/Auth/ProtectedRoute'
 
 function App() {
@@ -42,6 +43,14 @@ function App() {
           element={
             <ProtectedRoute>
               <HittingGameDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hitting/stats"
+          element={
+            <ProtectedRoute>
+              <HittingStatsPage />
             </ProtectedRoute>
           }
         />

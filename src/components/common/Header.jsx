@@ -33,7 +33,7 @@ export function Header() {
 
         {/* Navigation Links */}
         {user && (
-          <div className="flex gap-2 text-sm">
+          <div className="flex gap-2 text-sm flex-wrap">
             <button
               onClick={() => navigate('/dashboard')}
               className={`px-4 py-2 rounded transition ${
@@ -47,12 +47,22 @@ export function Header() {
             <button
               onClick={() => navigate('/hitting')}
               className={`px-4 py-2 rounded transition ${
-                isActive('/hitting')
+                location.pathname.startsWith('/hitting') && !isActive('/hitting/stats')
                   ? 'bg-blue-700 font-semibold'
                   : 'hover:bg-blue-700'
               }`}
             >
               ⚾ Hitting
+            </button>
+            <button
+              onClick={() => navigate('/hitting/stats')}
+              className={`px-4 py-2 rounded transition ${
+                isActive('/hitting/stats')
+                  ? 'bg-blue-700 font-semibold'
+                  : 'hover:bg-blue-700'
+              }`}
+            >
+              📈 Stats
             </button>
           </div>
         )}
