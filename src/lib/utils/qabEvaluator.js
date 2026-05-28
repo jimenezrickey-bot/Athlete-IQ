@@ -11,8 +11,9 @@ export function evaluateQAB(atBat, pitches = []) {
   }
 
   // 2. All hard hit balls (base hits excluded if bloops)
+  const hasHardContact = pitches.some(pitch => pitch.contact_quality === 'hard')
   if (
-    atBat.contact_quality === 'hard' &&
+    hasHardContact &&
     ['single', 'double', 'triple', 'home_run'].includes(atBat.result)
   ) {
     criteria.push('Hard hit ball')
