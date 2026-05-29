@@ -5,6 +5,7 @@ import { usePastHittingSessions } from '../lib/hooks/usePastHittingSessions'
 import { DateRangeFilter } from '../components/common/DateRangeFilter'
 import { PastGameCard } from '../components/Hitting/PastGameCard'
 import { Toast } from '../components/common/Toast'
+import { exportHittingDataToExcel } from '../lib/utils/exportData'
 
 export function HittingHistoryPage() {
   const navigate = useNavigate()
@@ -49,6 +50,57 @@ export function HittingHistoryPage() {
     navigate(`/hitting/history/${sessionId}`)
   }
 
+  const handleExportData = async () => {
+    try {
+      // Fetch all sessions (no date filter for complete export)
+      const { supabase } = await import('../lib/supabase')
+
+      // Fetch all sessions
+      const { data: allSessions, error: sessionsError } = await supabase
+        .from('hitting_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      // Fetch all at-bats with their pitches
+      const { data: allAtBats, error: atBatsError } = await supabase
+        .from('at_bats')
+        .select('*')
+        .in(
+          'session_id',
+          allSessions.map((s) => s.id)
+        )
+
+      if (atBatsError) throw atBatsError
+
+      // Fetch all pitches
+      const { data: allPitches, error: pitchesError } = await supabase
+        .from('hitting_events')
+        .select('*')
+        .in(
+          'at_bat_id',
+          allAtBats.map((ab) => ab.id)
+        )
+
+      if (pitchesError) throw pitchesError
+
+      // Combine at-bats with their pitches
+      const atBatsWithPitches = allAtBats.map((atBat) => ({
+        ...atBat,
+        pitches: allPitches
+          .filter((p) => p.at_bat_id === atBat.id)
+          .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
+      }))
+
+      // Export to Excel
+      exportHittingDataToExcel(allSessions, atBatsWithPitches)
+    } catch (error) {
+      console.error('Export error:', error)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8 flex items-center justify-center min-h-screen">
@@ -62,14 +114,23 @@ export function HittingHistoryPage() {
       {toast && <Toast message={toast} type="success" />}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Hitting History</h1>
-        <button
-          onClick={() => navigate('/hitting')}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
-        >
-          Live Entry
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExportData}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+            title="Download all hitting data to Excel"
+          >
+            📥 Export to Excel
+          </button>
+          <button
+            onClick={() => navigate('/hitting')}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+          >
+            Live Entry
+          </button>
+        </div>
       </div>
 
       {/* Filter */}
