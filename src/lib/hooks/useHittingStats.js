@@ -67,7 +67,6 @@ export function useHittingStats(userId) {
           .eq('hitting_sessions.user_id', userId)
           .gte('hitting_sessions.date', startDate)
           .lte('hitting_sessions.date', endDate)
-          .order('hitting_sessions.date', { ascending: false })
 
         if (atBatsError) throw atBatsError
 
