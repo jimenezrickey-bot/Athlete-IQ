@@ -20,6 +20,8 @@ export function HittingGameDetailPage() {
     updateAtBat,
     updatePitch,
     deletePitch,
+    deleteAtBat,
+    deleteSession,
   } = usePastHittingSessions(user?.id)
 
   const [editingAtBat, setEditingAtBat] = useState(null)
@@ -68,6 +70,23 @@ export function HittingGameDetailPage() {
     )
     if (atBat) {
       deletePitch(pitchId, atBat.id)
+    }
+  }
+
+  const handleDeleteAtBat = (atBatId) => {
+    if (window.confirm('Delete this at-bat and all its pitches? This cannot be undone.')) {
+      deleteAtBat(atBatId)
+    }
+  }
+
+  const handleDeleteGame = () => {
+    if (
+      window.confirm(
+        `Delete this entire game (${gameAtBats.length} at-bats)? This cannot be undone.`
+      )
+    ) {
+      deleteSession(currentGame.id)
+      navigate('/hitting/history')
     }
   }
 
@@ -125,10 +144,21 @@ export function HittingGameDetailPage() {
 
       {/* Game Header Card */}
       <div className="bg-blue-50 rounded-lg shadow p-4 sm:p-6 mb-6 border-2 border-blue-300">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
-          vs {currentGame.opponent}
-        </h1>
-        <p className="text-sm text-gray-600 mb-4">{gameDate}</p>
+        <div className="flex justify-between items-start mb-3">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
+              vs {currentGame.opponent}
+            </h1>
+            <p className="text-sm text-gray-600">{gameDate}</p>
+          </div>
+          <button
+            onClick={handleDeleteGame}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+            title="Delete this game"
+          >
+            🗑️ Delete
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -170,6 +200,7 @@ export function HittingGameDetailPage() {
               onEdit={handleEditAtBat}
               onEditPitch={handleEditPitch}
               onDeletePitch={handleDeletePitch}
+              onDeleteAtBat={handleDeleteAtBat}
             />
           ))}
         </div>

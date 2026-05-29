@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { PitchTable } from './PitchTable'
 
-export function AtBatDetail({ atBat, onEdit, onEditPitch, onDeletePitch }) {
+export function AtBatDetail({ atBat, onEdit, onEditPitch, onDeletePitch, onDeleteAtBat }) {
   const [isExpanded, setIsExpanded] = useState(false)
 
   const getResultEmoji = (result) => {
@@ -131,13 +131,24 @@ export function AtBatDetail({ atBat, onEdit, onEditPitch, onDeletePitch }) {
             />
           </div>
 
-          {/* Edit Button */}
-          <button
-            onClick={() => onEdit(atBat)}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
-          >
-            Edit At-Bat
-          </button>
+          {/* Edit and Delete Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => onEdit(atBat)}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+            >
+              Edit At-Bat
+            </button>
+            {onDeleteAtBat && (
+              <button
+                onClick={() => onDeleteAtBat(atBat.id)}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+                title="Delete this at-bat"
+              >
+                Delete
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

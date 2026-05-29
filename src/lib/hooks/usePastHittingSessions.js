@@ -288,6 +288,85 @@ export function usePastHittingSessions(userId) {
     }
   }, [gameAtBats, showToast])
 
+  // Delete an at-bat and all its pitches
+  const deleteAtBat = useCallback(async (atBatId) => {
+    try {
+      // First delete all pitches for this at-bat
+      const { error: pitchError } = await supabase
+        .from('hitting_events')
+        .delete()
+        .eq('at_bat_id', atBatId)
+
+      if (pitchError) throw pitchError
+
+      // Then delete the at-bat
+      const { error: atBatError } = await supabase
+        .from('at_bats')
+        .delete()
+        .eq('id', atBatId)
+
+      if (atBatError) throw atBatError
+
+      // Update local state
+      setGameAtBats((prev) => prev.filter((ab) => ab.id !== atBatId))
+
+      showToast('At-bat deleted', 2000)
+    } catch (error) {
+      console.error('Error deleting at-bat:', error)
+      showToast('Error deleting at-bat', 4000)
+    }
+  }, [showToast])
+
+  // Delete an entire game session and all its at-bats/pitches
+  const deleteSession = useCallback(async (sessionId) => {
+    try {
+      // Get all at-bats for this session
+      const { data: atBats, error: fetchError } = await supabase
+        .from('at_bats')
+        .select('id')
+        .eq('session_id', sessionId)
+
+      if (fetchError) throw fetchError
+
+      // Delete all pitches for all at-bats in this session
+      if (atBats && atBats.length > 0) {
+        const atBatIds = atBats.map((ab) => ab.id)
+        const { error: pitchError } = await supabase
+          .from('hitting_events')
+          .delete()
+          .in('at_bat_id', atBatIds)
+
+        if (pitchError) throw pitchError
+      }
+
+      // Delete all at-bats for this session
+      const { error: atBatError } = await supabase
+        .from('at_bats')
+        .delete()
+        .eq('session_id', sessionId)
+
+      if (atBatError) throw atBatError
+
+      // Delete the session itself
+      const { error: sessionError } = await supabase
+        .from('hitting_sessions')
+        .delete()
+        .eq('id', sessionId)
+
+      if (sessionError) throw sessionError
+
+      // Update local state
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+      setCurrentGame(null)
+      setGameAtBats([])
+
+      showToast('Game deleted', 2000)
+    } catch (error) {
+      console.error('Error deleting game:', error)
+      showToast('Error deleting game', 4000)
+    }
+  }, [showToast])
+
   return {
     sessions,
     currentGame,
@@ -299,6 +378,8 @@ export function usePastHittingSessions(userId) {
     updateAtBat,
     updatePitch,
     deletePitch,
+    deleteAtBat,
+    deleteSession,
     addPitch,
   }
 }
