@@ -5,10 +5,13 @@ import { supabase } from '../../lib/supabase'
 export function SignupForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [name, setName] = useState('')
   const [role, setRole] = useState('player')
   const [error, setError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [accessCode, setAccessCode] = useState(null)
+  const [userId, setUserId] = useState(null)
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -37,12 +40,15 @@ export function SignupForm() {
         if (authError.message.includes('already registered')) {
           throw new Error('This email is already registered. Please log in instead.')
         }
-        throw authError
+        console.error('Auth error:', authError)
+        throw new Error(`Signup failed: ${authError.message}`)
       }
 
       if (!authData.user) {
         throw new Error('Failed to create user. Please try again.')
       }
+
+      console.log('Auth user created:', authData.user.id)
 
       // Update profile (profile auto-created by database trigger)
       // Wait a moment for the trigger to create the profile
@@ -63,10 +69,12 @@ export function SignupForm() {
         if (!error) {
           // Success
           profileError = null
+          console.log('Profile updated successfully')
           break
         }
 
         profileError = error
+        console.error(`Profile update failed (attempt ${4 - retries}):`, error)
         retries--
 
         if (retries > 0) {
@@ -77,8 +85,24 @@ export function SignupForm() {
 
       if (profileError) {
         throw new Error(
-          `Failed to save profile: ${profileError.message}. Please contact support.`
+          `Failed to save profile: ${profileError.message}. Check browser console for details.`
         )
+      }
+
+      // If player, fetch their athlete access code
+      if (role === 'player') {
+        const { data: athlete, error: athleteError } = await supabase
+          .from('athletes')
+          .select('access_code')
+          .eq('user_id', authData.user.id)
+          .single()
+
+        if (!athleteError && athlete) {
+          setAccessCode(athlete.access_code)
+          setUserId(authData.user.id)
+          // Don't navigate yet - show the access code
+          return
+        }
       }
 
       // Show success message
@@ -94,6 +118,42 @@ export function SignupForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show access code screen for new player
+  if (accessCode) {
+    return (
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-6">
+          <h2 className="text-2xl font-bold text-green-700 mb-2">Welcome, {name}! 🎉</h2>
+          <p className="text-gray-700 mb-4">
+            Your account has been created. Here's your unique athlete access code:
+          </p>
+
+          <div className="bg-white border-2 border-green-500 rounded-lg p-4 mb-4 text-center">
+            <p className="text-xs text-gray-600 mb-2">Your Access Code</p>
+            <p className="text-3xl font-mono font-bold text-green-600 break-all">{accessCode}</p>
+          </div>
+
+          <p className="text-sm text-gray-600 mb-4">
+            📌 <strong>Share this code</strong> with your parents, coaches, or friends so they can log game data for you.
+          </p>
+
+          <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-sm text-blue-700">
+            <p>
+              <strong>Privacy Note:</strong> Only people with your access code can view or enter data for you. You can generate new codes or revoke old ones anytime in settings.
+            </p>
+          </div>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition"
+          >
+            Got it, go to dashboard →
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -130,13 +190,23 @@ export function SignupForm() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-2.5 text-gray-600 hover:text-gray-800"
+              title={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? '👁️' : '👁️‍🗨️'}
+            </button>
+          </div>
         </div>
 
         <div>

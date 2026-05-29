@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '../supabase'
 import { calculateAllStats } from '../utils/statsCalculator'
 
-export function useHittingStats(userId) {
+export function useHittingStats(athleteId) {
   const [stats, setStats] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -42,7 +42,7 @@ export function useHittingStats(userId) {
 
   const fetchStatsForDateRange = useCallback(
     async (startDate, endDate) => {
-      if (!userId) return
+      if (!athleteId) return
 
       setIsLoading(true)
       setError(null)
@@ -59,12 +59,12 @@ export function useHittingStats(userId) {
             is_qab,
             session_id,
             hitting_sessions!at_bats_session_id_fkey (
-              user_id,
+              athlete_id,
               date
             )
           `
           )
-          .eq('hitting_sessions.user_id', userId)
+          .eq('hitting_sessions.athlete_id', athleteId)
           .gte('hitting_sessions.date', startDate)
           .lte('hitting_sessions.date', endDate)
 
@@ -87,7 +87,7 @@ export function useHittingStats(userId) {
         // Flatten the at-bats data
         const flattenedAtBats = atBatsData?.map((ab) => ({
           ...ab,
-          user_id: ab.hitting_sessions?.user_id,
+          athlete_id: ab.hitting_sessions?.athlete_id,
           date: ab.hitting_sessions?.date,
         })) || []
 
@@ -116,7 +116,7 @@ export function useHittingStats(userId) {
         setIsLoading(false)
       }
     },
-    [userId]
+    [athleteId]
   )
 
   const fetchStatsForPreset = useCallback(

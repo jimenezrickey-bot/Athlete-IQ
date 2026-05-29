@@ -174,88 +174,90 @@ export function AtBatEditor({ atBat, onSave, onCancel }) {
             </div>
           </div>
 
-          {/* RBIs */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">RBIs</label>
-            <input
-              type="number"
-              min="0"
-              max="4"
-              value={rbis}
-              onChange={(e) => setRbis(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          {/* RBIs & Runners Advanced */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">RBIs</label>
+              <input
+                type="number"
+                min="0"
+                max="4"
+                value={rbis}
+                onChange={(e) => setRbis(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-          {/* Runners Advanced */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Runners Advanced (e.g., "2B→3B, 3B→H")
-            </label>
-            <textarea
-              value={runnersAdvanced}
-              onChange={(e) => setRunnersAdvanced(e.target.value)}
-              placeholder="1B→2B, 2B→3B, 3B→H, etc."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              rows="2"
-            />
-          </div>
-
-          {/* Hit Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Hit Type</label>
-            <div className="flex gap-3 flex-wrap">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="hit_type"
-                  value="normal"
-                  checked={hitType === 'normal'}
-                  onChange={(e) => setHitType(e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Normal Hit</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Runners Advanced
               </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="hit_type"
-                  value="bunt"
-                  checked={hitType === 'bunt'}
-                  onChange={(e) => setHitType(e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Bunt</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="hit_type"
-                  value="hit_and_run"
-                  checked={hitType === 'hit_and_run'}
-                  onChange={(e) => setHitType(e.target.value)}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Hit & Run</span>
-              </label>
+              <input
+                type="text"
+                value={runnersAdvanced}
+                onChange={(e) => setRunnersAdvanced(e.target.value)}
+                placeholder="e.g., 2B→3B, 3B→H"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              />
             </div>
           </div>
 
-          {/* Sacrifice Type */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sacrifice Play (if applicable)
-            </label>
-            <select
-              value={sacType}
-              onChange={(e) => setSacType(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">None</option>
-              <option value="sac_bunt">Sac Bunt</option>
-              <option value="sac_drag">Sac Drag</option>
-              <option value="squeeze">Squeeze Play</option>
-            </select>
+          {/* Hit Type & Sacrifice Type */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hit Type</label>
+              <div className="flex gap-2 flex-col">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="hit_type"
+                    value="normal"
+                    checked={hitType === 'normal'}
+                    onChange={(e) => setHitType(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Normal</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="hit_type"
+                    value="bunt"
+                    checked={hitType === 'bunt'}
+                    onChange={(e) => setHitType(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Bunt</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="hit_type"
+                    value="hit_and_run"
+                    checked={hitType === 'hit_and_run'}
+                    onChange={(e) => setHitType(e.target.value)}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Hit & Run</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Sacrifice Type
+              </label>
+              <select
+                value={sacType}
+                onChange={(e) => setSacType(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              >
+                <option value="">None</option>
+                <option value="sac_bunt">Sac Bunt</option>
+                <option value="sac_drag">Sac Drag</option>
+                <option value="squeeze">Squeeze</option>
+              </select>
+            </div>
           </div>
 
           {/* Notes */}

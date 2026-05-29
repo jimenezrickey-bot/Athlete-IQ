@@ -42,7 +42,7 @@ export function Header() {
                   : 'hover:bg-blue-700'
               }`}
             >
-              📊 Pitching
+              📗 Long Toss Program
             </button>
             <button
               onClick={() => navigate('/hitting')}
@@ -52,7 +52,7 @@ export function Header() {
                   : 'hover:bg-blue-700'
               }`}
             >
-              ⚾ Hitting
+              ⚾ Live At Bats
             </button>
             <button
               onClick={() => navigate('/hitting/stats')}
@@ -62,7 +62,7 @@ export function Header() {
                   : 'hover:bg-blue-700'
               }`}
             >
-              📈 Stats
+              📈 Performance
             </button>
           </div>
         )}

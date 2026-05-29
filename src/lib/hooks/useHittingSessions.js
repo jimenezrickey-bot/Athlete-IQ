@@ -15,7 +15,7 @@ export function useHittingSessions(userId) {
     setTimeout(() => setToast(null), duration)
   }, [])
 
-  // Fetch all sessions for the user
+  // Fetch all sessions for the athlete
   const fetchSessions = useCallback(async () => {
     if (!userId) return
 
@@ -24,7 +24,7 @@ export function useHittingSessions(userId) {
       const { data, error } = await supabase
         .from('hitting_sessions')
         .select('*')
-        .eq('user_id', userId)
+        .eq('athlete_id', userId)
         .order('date', { ascending: false })
 
       if (error) throw error
@@ -83,7 +83,7 @@ export function useHittingSessions(userId) {
         .from('hitting_sessions')
         .insert([
           {
-            user_id: userId,
+            athlete_id: userId,
             date: setupData.session_date,
             opponent: setupData.opponent,
             mode: setupData.mode,

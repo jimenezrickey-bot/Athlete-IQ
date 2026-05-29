@@ -15,7 +15,7 @@ import { GameSummary } from '../components/Hitting/GameSummary'
 
 export function HittingTrackerPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { currentAthlete } = useAuth()
   const {
     currentSession,
     currentAtBat,
@@ -29,7 +29,7 @@ export function HittingTrackerPage() {
     addPitch,
     completeAtBat,
     endSession,
-  } = useHittingSessions(user?.id)
+  } = useHittingSessions(currentAthlete?.id)
 
   const [selectedZone, setSelectedZone] = useState(null)
   const [selectedOutcome, setSelectedOutcome] = useState(null)
@@ -129,6 +129,15 @@ export function HittingTrackerPage() {
     return (
       <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {toast && <Toast message={toast} type="success" />}
+
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 text-blue-600 hover:text-blue-800 font-semibold text-sm"
+        >
+          ← Back
+        </button>
+
         <div className="flex justify-between items-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Hitting Tracker</h1>
           <button
@@ -149,12 +158,18 @@ export function HittingTrackerPage() {
       {toast && <Toast message={toast} type="success" />}
 
       {/* Top Navigation */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6 gap-2">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
+        >
+          ← Back to Dashboard
+        </button>
         <button
           onClick={() => navigate('/hitting/history')}
           className="text-blue-600 hover:text-blue-800 font-semibold text-sm"
         >
-          ← History
+          History
         </button>
       </div>
 

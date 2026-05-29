@@ -9,7 +9,7 @@ import { Toast } from '../components/common/Toast'
 
 export function HittingStatsPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { currentAthlete } = useAuth()
   const {
     stats,
     isLoading,
@@ -17,7 +17,7 @@ export function HittingStatsPage() {
     fetchStatsForPreset,
     fetchStatsForCustomRange,
     getDateRange,
-  } = useHittingStats(user?.id)
+  } = useHittingStats(currentAthlete?.id)
 
   const [selectedPreset, setSelectedPreset] = useState('last30')
   const [customStartDate, setCustomStartDate] = useState('')
@@ -27,7 +27,7 @@ export function HittingStatsPage() {
 
   // Fetch stats on mount and when preset changes
   useEffect(() => {
-    if (user?.id && selectedPreset) {
+    if (currentAthlete?.id && selectedPreset) {
       if (selectedPreset === 'custom') {
         // Only fetch if custom range is set
         if (customStartDate && customEndDate) {
@@ -37,11 +37,11 @@ export function HittingStatsPage() {
         fetchStatsForPreset(selectedPreset)
       }
     }
-  }, [user?.id, selectedPreset])
+  }, [currentAthlete?.id, selectedPreset])
 
   // Fetch at-bats data for detailed analysis
   useEffect(() => {
-    if (!user?.id || !stats?.dateRange) return
+    if (!currentAthlete?.id || !stats?.dateRange) return
 
     const fetchAtBats = async () => {
       const { data, error: err } = await supabase
@@ -54,12 +54,12 @@ export function HittingStatsPage() {
           is_qab,
           session_id,
           hitting_sessions!at_bats_session_id_fkey (
-            user_id,
+            athlete_id,
             date
           )
         `
         )
-        .eq('hitting_sessions.user_id', user.id)
+        .eq('hitting_sessions.athlete_id', currentAthlete.id)
         .gte('hitting_sessions.date', stats.dateRange.startDate)
         .lte('hitting_sessions.date', stats.dateRange.endDate)
         .order('hitting_sessions.date', { ascending: false })
@@ -70,7 +70,7 @@ export function HittingStatsPage() {
     }
 
     fetchAtBats()
-  }, [user?.id, stats?.dateRange])
+  }, [currentAthlete?.id, stats?.dateRange])
 
   const handlePresetChange = (preset) => {
     setSelectedPreset(preset)

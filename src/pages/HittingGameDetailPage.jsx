@@ -10,7 +10,7 @@ import { Toast } from '../components/common/Toast'
 export function HittingGameDetailPage() {
   const { sessionId } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { currentAthlete } = useAuth()
   const {
     currentGame,
     gameAtBats,
@@ -22,7 +22,7 @@ export function HittingGameDetailPage() {
     deletePitch,
     deleteAtBat,
     deleteSession,
-  } = usePastHittingSessions(user?.id)
+  } = usePastHittingSessions(currentAthlete?.id)
 
   const [editingAtBat, setEditingAtBat] = useState(null)
   const [editingPitch, setEditingPitch] = useState(null)

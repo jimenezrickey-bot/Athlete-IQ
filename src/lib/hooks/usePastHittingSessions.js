@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { supabase } from '../supabase'
 import { evaluateQAB } from '../utils/qabEvaluator'
 
-export function usePastHittingSessions(userId) {
+export function usePastHittingSessions(athleteId) {
   const [sessions, setSessions] = useState([])
   const [currentGame, setCurrentGame] = useState(null)
   const [gameAtBats, setGameAtBats] = useState([])
@@ -16,14 +16,14 @@ export function usePastHittingSessions(userId) {
 
   // Fetch past sessions with optional date range
   const fetchPastSessions = useCallback(async (dateStart = null, dateEnd = null) => {
-    if (!userId) return
+    if (!athleteId) return
 
     try {
       setIsLoading(true)
       let query = supabase
         .from('hitting_sessions')
         .select('*')
-        .eq('user_id', userId)
+        .eq('athlete_id', athleteId)
         .eq('status', 'complete')
         .order('date', { ascending: false })
 
@@ -44,7 +44,7 @@ export function usePastHittingSessions(userId) {
     } finally {
       setIsLoading(false)
     }
-  }, [userId, showToast])
+  }, [athleteId, showToast])
 
   // Fetch all at-bats for a specific game
   const fetchGameDetail = useCallback(async (sessionId) => {

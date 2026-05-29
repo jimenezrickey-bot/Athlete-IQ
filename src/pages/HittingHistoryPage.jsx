@@ -9,14 +9,14 @@ import { exportHittingDataToExcel } from '../lib/utils/exportData'
 
 export function HittingHistoryPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const { sessions, isLoading, toast, fetchPastSessions } = usePastHittingSessions(user?.id)
+  const { currentAthlete } = useAuth()
+  const { sessions, isLoading, toast, fetchPastSessions } = usePastHittingSessions(currentAthlete?.id)
   const [searchOpponent, setSearchOpponent] = useState('')
   const [filteredSessions, setFilteredSessions] = useState([])
 
   // Initialize with last 30 days
   useEffect(() => {
-    if (user?.id) {
+    if (currentAthlete?.id) {
       const today = new Date()
       const thirtyDaysAgo = new Date(today)
       thirtyDaysAgo.setDate(today.getDate() - 30)
@@ -26,7 +26,7 @@ export function HittingHistoryPage() {
         today.toISOString().split('T')[0]
       )
     }
-  }, [user?.id, fetchPastSessions])
+  }, [currentAthlete?.id, fetchPastSessions])
 
   // Filter sessions by opponent and opponent search
   useEffect(() => {
@@ -112,6 +112,14 @@ export function HittingHistoryPage() {
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
       {toast && <Toast message={toast} type="success" />}
+
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/hitting')}
+        className="mb-4 text-blue-600 hover:text-blue-800 font-semibold text-sm"
+      >
+        ← Back
+      </button>
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
