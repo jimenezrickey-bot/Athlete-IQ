@@ -1,8 +1,7 @@
 import { useState, useCallback } from 'react'
-import { usePolling } from './usePolling'
 import { supabase } from '../supabase'
 
-export function usePitchingSessions(userId) {
+export function usePitchingSessions(athleteId) {
   const [sessions, setSessions] = useState([])
   const [toast, setToast] = useState(null)
 
@@ -12,41 +11,24 @@ export function usePitchingSessions(userId) {
   }
 
   const fetchSessions = useCallback(async () => {
-    if (!userId) return []
-
+    if (!athleteId) return []
     const { data, error } = await supabase
-      .from('pitching_sessions')
+      .from('daily_sessions')
       .select('*')
-      .eq('user_id', userId)
+      .eq('athlete_id', athleteId)
       .order('date', { ascending: false })
-
     if (error) throw error
+    setSessions(data || [])
     return data
-  }, [userId])
-
-  const { data: polledSessions, refetch } = usePolling(fetchSessions, 5000, !!userId)
-
-  if (polledSessions && JSON.stringify(polledSessions) !== JSON.stringify(sessions)) {
-    const newSessions = polledSessions.filter(
-      ps => !sessions.find(s => s.id === ps.id)
-    )
-    if (newSessions.length > 0) {
-      setSessions(polledSessions)
-      showToast(`New session logged by another user`)
-    } else {
-      setSessions(polledSessions)
-    }
-  }
+  }, [athleteId])
 
   const addSession = async (sessionData) => {
     const { data, error } = await supabase
-      .from('pitching_sessions')
-      .insert([{ ...sessionData, user_id: userId }])
+      .from('daily_sessions')
+      .insert([{ ...sessionData, athlete_id: athleteId }])
       .select()
-
     if (error) throw error
-
-    setSessions([data[0], ...sessions])
+    setSessions(prev => [data[0], ...prev])
     return data[0]
   }
 
@@ -54,6 +36,6 @@ export function usePitchingSessions(userId) {
     sessions,
     addSession,
     toast,
-    refetch,
+    fetchSessions,
   }
 }
