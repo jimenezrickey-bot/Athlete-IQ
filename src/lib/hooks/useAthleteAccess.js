@@ -6,20 +6,17 @@ export function useAthleteAccess() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Get athlete's access code
   const getAccessCode = useCallback(async (athleteId) => {
     if (!athleteId) return
-
     try {
       setIsLoading(true)
+      setError(null)
       const { data, error: fetchError } = await supabase
         .from('athletes')
         .select('access_code')
         .eq('id', athleteId)
         .single()
-
       if (fetchError) throw fetchError
-
       setAccessCode(data?.access_code || null)
       return data?.access_code
     } catch (err) {
@@ -31,79 +28,15 @@ export function useAthleteAccess() {
     }
   }, [])
 
-  // Generate guest token for current game
-  const generateGuestToken = useCallback(
-    async (athleteId, gameId = null, type = 'hitting') => {
-      if (!athleteId) return null
-
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // Generate random token
-        const token = `GUEST-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`
-
-        // Set expiry to 2 hours from now
-        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString()
-
-        const { data, error: insertError } = await supabase
-          .from('guest_access_tokens')
-          .insert([
-            {
-              athlete_id: athleteId,
-              game_id: gameId,
-              token,
-              type,
-              expires_at: expiresAt,
-              is_active: true,
-            },
-          ])
-          .select()
-
-        if (insertError) throw insertError
-
-        return data?.[0]
-      } catch (err) {
-        console.error('Error generating guest token:', err)
-        setError(err.message)
-        return null
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    []
-  )
-
-  // Revoke guest token
-  const revokeGuestToken = useCallback(async (tokenId) => {
-    try {
-      setIsLoading(true)
-      const { error: updateError } = await supabase
-        .from('guest_access_tokens')
-        .update({ is_active: false })
-        .eq('id', tokenId)
-
-      if (updateError) throw updateError
-      return true
-    } catch (err) {
-      console.error('Error revoking guest token:', err)
-      setError(err.message)
-      return false
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // Parent links to athlete using athlete's access code
   const linkParentUsingAccessCode = useCallback(async (parentUserId, athleteAccessCode) => {
     try {
       setIsLoading(true)
       setError(null)
 
-      // Verify the access code exists and get athlete ID
+      // Find athlete by access code
       const { data: athlete, error: athleteError } = await supabase
         .from('athletes')
-        .select('id')
+        .select('id, name')
         .eq('access_code', athleteAccessCode)
         .single()
 
@@ -128,7 +61,8 @@ export function useAthleteAccess() {
       return {
         success: true,
         athleteId: athlete.id,
-        message: 'Successfully linked to athlete!',
+        athleteName: athlete.name,
+        message: `Successfully linked to ${athlete.name}!`,
       }
     } catch (err) {
       console.error('Error linking parent:', err)
@@ -139,13 +73,59 @@ export function useAthleteAccess() {
     }
   }, [])
 
+  const unlinkParent = useCallback(async (parentUserId, athleteId) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { error: unlinkError } = await supabase
+        .from('parent_athlete_relationships')
+        .delete()
+        .eq('parent_user_id', parentUserId)
+        .eq('athlete_id', athleteId)
+
+      if (unlinkError) throw unlinkError
+
+      return { success: true, message: 'Successfully unlinked.' }
+    } catch (err) {
+      console.error('Error unlinking parent:', err)
+      setError(err.message)
+      return { success: false, message: err.message }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  const getLinkedAthletes = useCallback(async (parentUserId) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data, error: fetchError } = await supabase
+        .from('parent_athlete_relationships')
+        .select('athlete_id, athletes(id, name, access_code)')
+        .eq('parent_user_id', parentUserId)
+        .eq('verified', true)
+
+      if (fetchError) throw fetchError
+
+      return data?.map(rel => rel.athletes).filter(Boolean) || []
+    } catch (err) {
+      console.error('Error fetching linked athletes:', err)
+      setError(err.message)
+      return []
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   return {
     accessCode,
     isLoading,
     error,
     getAccessCode,
-    generateGuestToken,
-    revokeGuestToken,
     linkParentUsingAccessCode,
+    unlinkParent,
+    getLinkedAthletes,
   }
 }
